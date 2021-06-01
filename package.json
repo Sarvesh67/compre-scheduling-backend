@@ -1,0 +1,34 @@
+{
+	"name": "compre-scheduling-backend",
+	"version": "1.0.0",
+	"description": "",
+	"main": "app.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "nodemon src/app.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Sarvesh67/compre-scheduling-backend.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Sarvesh67/compre-scheduling-backend/issues"
+	},
+	"homepage": "https://github.com/Sarvesh67/compre-scheduling-backend#readme",
+	"dependencies": {
+		"body-parser": "^1.19.0",
+		"cookie-parser": "^1.4.5",
+		"cors": "^2.8.5",
+		"express": "^4.17.1",
+		"helmet": "^4.6.0",
+		"xss-clean": "^0.1.1"
+	},
+	"devDependencies": {
+		"eslint": "^7.27.0",
+		"nodemon": "^2.0.7",
+		"prettier": "^2.3.0"
+	}
+}
