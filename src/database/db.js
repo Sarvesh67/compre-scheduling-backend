@@ -1,33 +1,83 @@
-const { Sequelize, Op } = require('sequelize');
-const config = require('../services/config.service');
+const conn = require('./conn');
+const models = require('./models/model');
 
-const db = {};
+var db = Object.assign({ public: models }, conn);
 
-db.sequelize = Sequelize;
+// Define relations here
+const statics = db.public.statics;
+const schedules = db.public.schedules;
 
-db.conn = new Sequelize({
-	dialect: config.db.dialect,
-	host: config.db.host,
-	username: config.db.username,
-	password: config.db.password,
-	port: config.db.port,
-	database: config.db.database,
-	pool: {
-		max: 10,
-		acquire: 10000,
-		maxUses: 3,
-		min: 1
-	}
+// Statics relations
+statics.block.hasMany(statics.courses, { foreignKey: 'block_id', onDelete: 'CASCADE' });
+statics.invigilators.hasMany(statics.unavailableDates, {
+	foreignKey: 'invigilator_id',
+	onDelete: 'CASCADE'
+});
+statics.invigilators.belongsToMany(statics.courses, {
+	through: statics.teamMembers,
+	foreignKey: 'invigilator_id',
+	onDelete: 'CASCADE'
+});
+statics.courses.belongsToMany(statics.invigilators, {
+	through: statics.teamMembers,
+	foreignKey: 'courses_id',
+	onDelete: 'CASCADE'
 });
 
-db.op = Op;
+// Schedules relations
+schedules.user.hasMany(schedules.schedules, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+schedules.schedules.hasMany(schedules.exam, { foreignKey: 'schedule_id', onDelete: 'CASCADE' });
 
-db.connectDb = () => {
-	return db.conn.authenticate().then(console.log('Postgres connection succesful on port: ' + config.db.port));
-};
+statics.courses.hasMany(schedules.exam, {
+	foreignKey: 'course_id',
+	onDelete: 'CASCADE'
+});
+/* schedules.exam.belongsTo(statics.courses, {
+	foreignKey: 'exam_id',
+	onDelete: 'CASCADE'
+}); */
 
-// Define models here
+schedules.schedules.hasMany(schedules.exam, {
+	foreignKey: 'schedule_id',
+	onDelete: 'CASCADE'
+});
+/* schedules.exam.belongsTo(schedules.schedules, {
+	foreignKey: 'exam_id',
+	onDelete: 'CASCADE'
+}); */
 
-// Define relationships here
+schedules.exam.hasMany(schedules.examRoom, {
+	foreignKey: 'exam_id',
+	onDelete: 'CASCADE'
+});
+/* schedules.examRoom.belongsTo(schedules.exam, {
+	foreignKey: 'exam_room_id',
+	onDelete: 'CASCADE'
+}); */
+
+statics.rooms.hasMany(schedules.examRoom, {
+	foreignKey: 'room_id',
+	onDelete: 'CASCADE'
+});
+/* schedules.examRoom.belongsTo(statics.rooms, {
+	foreignKey: 'exam_room_id',
+	onDelete: 'CASCADE'
+}); */
+
+schedules.examRoom.hasMany(schedules.invigilatorsAlloted, {
+	foreignKey: 'exam_room_id',
+	onDelete: 'CASCADE'
+});
+statics.invigilators.hasMany(schedules.invigilatorsAlloted, {
+	foreignKey: 'invigilators_id',
+	onDelete: 'CASCADE'
+});
+
+// Sync db here
+(async () => {
+	await db.conn.sync({ force: true }).catch((e) => {
+		console.log('Error occured :(\n' + e);
+	});
+})();
 
 module.exports = db;
