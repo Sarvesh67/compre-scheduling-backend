@@ -6,8 +6,9 @@ const helmet = require('helmet');
 const xss = require('xss-clean');
 const cors = require('cors');
 const routes = require('./routes');
+const db = require('./database/db');
 
-function Server() {
+async function Server() {
 	const app = express();
 
 	// Load middlewares here
@@ -36,14 +37,25 @@ function Server() {
 	app.listen(5000, () => {
 		console.log('Listening on port 5000. \nWelcome to the Compre Scheduling App!');
 	});
+
+	app.on('error', (e) => {
+		throw e;
+	});
 }
 
-// eslint-disable-next-line no-unused-vars
 function Database() {
-	// Connect Database here
+	// Test connectivity
+	return db.connectDb();
 }
 
 if (require.main === module) {
-	Server();
-	Database();
+	// Run Express App
+	Server().catch((e) => {
+		console.log(e);
+	});
+
+	// Run Database
+	Database().catch((e) => {
+		console.log(e);
+	});
 }
