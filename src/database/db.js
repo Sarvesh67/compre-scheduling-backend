@@ -73,11 +73,4 @@ statics.invigilators.hasMany(schedules.invigilatorsAlloted, {
 	onDelete: 'CASCADE'
 });
 
-// Sync db here
-(async () => {
-	await db.conn.sync({ force: true }).catch((e) => {
-		console.log('Error occured :(\n' + e);
-	});
-})();
-
 module.exports = db;
