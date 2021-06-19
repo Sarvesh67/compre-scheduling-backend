@@ -1,12 +1,13 @@
 const express = require('express');
 const userControllers = require('../controllers/user.controller');
+const { route } = require('./exam.route');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-	return res.status(200).json('Welcome to the user routes!');
-});
-
-router.get('/test', userControllers.TestController);
+router.get('/', userControllers.getAll);
+router.post('/login', userControllers.login);
+router.post('/create', userControllers.create);
+router.delete('/', userControllers.purgeAll);
+router.delete('/:id', userControllers.deleteUser);
 
 module.exports = router;
