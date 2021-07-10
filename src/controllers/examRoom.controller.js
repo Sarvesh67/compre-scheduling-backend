@@ -101,7 +101,7 @@ const update = async (req, res) => {
 		const updatedExamRoom = await schedules.examRoom.update(update, { where: { id: id }, returning: true });
 		return res.status(200).json({
 			msg: 'Exam Room updated successfully!',
-			exam: updatedExamRoom[1][0]
+			examRoom: updatedExamRoom[1][0]
 		});
 	} catch (e) {
 		console.log(e);
