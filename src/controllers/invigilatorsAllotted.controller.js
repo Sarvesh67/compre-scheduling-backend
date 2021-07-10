@@ -33,7 +33,7 @@ const includeMetadata = {
 const create = async (req, res) => {
 	try {
 		const invigilatorsAllotted = req.body;
-		const invigilatorsAllottedSaved = await schedules.invigilatorsAlloted.create(invigilatorsAlloted);
+		const invigilatorsAllottedSaved = await schedules.invigilatorsAlloted.create(invigilatorsAllotted);
 		return res.status(200).json({
 			msg: 'Invigilators Allotted Entry successfully created!',
 			invigilatorsAllotted: invigilatorsAllottedSaved
