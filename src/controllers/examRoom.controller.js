@@ -40,6 +40,9 @@ const get = async (req, res) => {
 			include: [
 				{
 					model: rooms
+				},
+				{
+					model: schedules.exam
 				}
 			]
 		});
@@ -67,6 +70,9 @@ const getAll = async (req, res) => {
 			include: [
 				{
 					model: rooms
+				},
+				{
+					model: schedules.exam
 				}
 			]
 		});
