@@ -15,10 +15,10 @@ module.exports = sequelize.define(
 			type: DataTypes.TEXT
 		},
 		start_date: {
-			type: DataTypes.TIME
+			type: DataTypes.DATE
 		},
 		end_date: {
-			type: DataTypes.TIME
+			type: DataTypes.DATE
 		},
 		slots_each_day: {
 			type: DataTypes.INTEGER
