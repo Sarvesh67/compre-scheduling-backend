@@ -8,5 +8,6 @@ router.get('/', scheduleControllers.getAll);
 router.post('/:userId', scheduleControllers.create);
 router.delete('/:id', scheduleControllers.delete);
 router.put('/:id', scheduleControllers.update);
+router.get('/:id', scheduleControllers.get);
 
 module.exports = router;

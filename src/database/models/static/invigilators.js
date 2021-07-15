@@ -33,7 +33,7 @@ module.exports = sequelize.define(
 			type: DataTypes.TEXT
 		},
 		mobile: {
-			type: DataTypes.INTEGER
+			type: DataTypes.TEXT
 		}
 	},
 	{

@@ -12,7 +12,7 @@ module.exports = sequelize.define(
 			autoIncrement: true
 		},
 		date: {
-			type: DataTypes.TIME
+			type: DataTypes.DATE
 		},
 		time: {
 			type: DataTypes.ENUM('9-12', '2-5') // Add enumerations for compre times here

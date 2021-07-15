@@ -66,7 +66,7 @@ const get = async (req, res) => {
  */
 const getAll = async (req, res) => {
 	try {
-		const examRooms = await schedules.examRoom.findByPk(id, {
+		const examRooms = await schedules.examRoom.findAll({
 			include: [
 				{
 					model: rooms

@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.get('/get/:id', roomController.get);
 router.get('/getAll', roomController.getAll);
+router.post('/create', roomController.create);
 
 module.exports = router;
