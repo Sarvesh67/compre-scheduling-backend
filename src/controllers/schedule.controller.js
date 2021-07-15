@@ -1,10 +1,39 @@
 const express = require('express')
 const db = require('../database/db')
 const { statics } = require('../database/models/model')
+const examRoom = require('../database/models/schedule/examRoom')
 const invigilatorsAlloted = require('../database/models/schedule/invigilatorsAlloted')
 
 const sched = db.public.schedules
 const stat = db.public.statics
+
+function upsertExamRoom(values, condition) {
+    return sched.examRoom
+        .findOne({ where: condition })
+        .then(function(obj) {
+            // update
+            if(obj)
+                return obj.update(values, {
+					where: condition
+				});
+            // insert
+            return sched.examRoom.create(values);
+        })
+}
+
+function upsertInvigilator(values, condition) {
+    return sched.invigilatorsAlloted
+        .findOne({ where: condition })
+        .then(function(obj) {
+            // update
+            if(obj)
+                return obj.update(values, {
+					where: condition
+				});
+            // insert
+            return sched.invigilatorsAlloted.create(values);
+        })
+}
 
 const create = async (req, res) => {
     try {
@@ -102,19 +131,41 @@ const update = async (req, res) => {
 	try {
 		const updateSched = req.body.schedule;
 		const id = req.params.id;
-		const exam = req.body.exam;
+		const exams = req.body.exams;
 		const updatedSchedule = await sched.schedules.update(updateSched, { where: { id: id }, returning: true });
-		id = exam.id;
-		const updatedExam = await sched.exam.update(updateExam, {
-			where: {
-				id : id
-			},
-			returning: true
-		});
+
+		exams.forEach(async (exam) => {
+			//update the exam block
+			const exam_id = exam.id;
+			const updatedExam = await sched.exam.update(exam,{
+				where: {
+					id : exam_id
+				},
+				returning : true
+			})
+			//reading the exam rooms
+			const examRooms = exam.exam_rooms;
+			examRooms.forEach(async (room) =>{
+				//update exam room
+				const room_id = room.id;
+				await upsertExamRoom(room, {
+					id: room_id
+				})
+				//reading the invigilators Alloted
+				const invigilatorsAlloted = room.invigilatorsAlloteds;
+				invigilatorsAlloted.forEach(async(invig) => {
+					//update invigilator Alloted
+					const invig_id = invig.id;
+					await upsertInvigilator(invig, {
+						id: invig_id
+					});
+				})
+			})
+		})
+
 		return res.status(200).json({
 			msg: 'Schedule Details Successfully updated!',
-			schedule: updatedSchedule[1][0],
-			exam: updatedExam[1][0]
+			schedule: updatedSchedule[1][0]
 		});
 	} catch (e) {
 		console.log(e);
