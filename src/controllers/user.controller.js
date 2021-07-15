@@ -1,5 +1,5 @@
 const express = require('express')
-const db = require('../database/db')
+const db = require('../database/db');
 
 const schedules = db.public.schedules
 
@@ -75,6 +75,26 @@ const login = async (req, res) => {
 	}
 }
 
+const getSchedules = async (req, res) => {
+	try {
+		const id = req.body.userId;
+		const sched = await schedules.schedules.findAll({
+			where: {
+				user_id: id
+			}
+		})
+		return res.status(200).json({
+			msg: 'Schedules Retireved',
+			sched
+		})
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({
+			msg: 'Internal server error :('
+		});
+	}
+}
+
 const purgeAll = async (req, res) => {
 	try {
 		await schedules.user.destroy({
@@ -114,5 +134,6 @@ module.exports = {
 	getAll: getAll,
 	login: login,
 	purgeAll: purgeAll,
-	deleteUser: deleteUser
+	deleteUser: deleteUser,
+	getSchedules: getSchedules
 };
