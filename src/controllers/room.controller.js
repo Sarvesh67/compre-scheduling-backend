@@ -8,6 +8,23 @@ const rooms = db.public.statics.rooms;
  * @param {e.Response} res
  * @returns {Promise<e.Response>}
  */
+
+ const create = async (req, res) => {
+	try {
+		const room = req.body;
+		const roomsaved = await rooms.create(room);
+		res.status(200).json({
+			msg: 'Room successfully created!',
+			course: roomsaved
+		});
+	} catch (e) {
+		console.log(e);
+		return res.status(500).json({
+			msg: 'Internal server error :('
+		});
+	}
+};
+
 const get = async (req, res) => {
 	try {
 		const id = req.params.id;
@@ -47,5 +64,6 @@ const getAll = async (req, res) => {
 
 module.exports = {
 	get: get,
-	getAll: getAll
+	getAll: getAll,
+	create: create
 };

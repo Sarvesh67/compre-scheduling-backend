@@ -76,7 +76,7 @@ const get = async (req, res) => {
  */
 const getAll = async (req, res) => {
 	try {
-		const invigilatorsAllotted = await schedules.invigilatorsAlloted.findByPk(id, includeMetadata);
+		const invigilatorsAllotted = await schedules.invigilatorsAlloted.findAll({}, includeMetadata);
 		return res.status(200).json({
 			msg: 'Invigilators Allotted Entries successfully retrieved',
 			invigilatorsAllotted
