@@ -10,6 +10,9 @@ module.exports = sequelize.define(
 			primaryKey: true,
 			allowNull: false,
 			autoIncrement: true
+		},
+		status: {
+			type: DataTypes.TEXT
 		}
 	},
 	{
