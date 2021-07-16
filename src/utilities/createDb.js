@@ -12,13 +12,17 @@ async function public_force() {
 	const invigilators = JSON.parse(fs.readFileSync('compre-data/invigilators.json'));
 	await db.public.statics.invigilators.bulkCreate(invigilators);
 
-	// Populate invigilators
+	// Populate unavailable dates
 	const unavailableDates = JSON.parse(fs.readFileSync('compre-data/unavailable_dates.json'));
 	await db.public.statics.unavailableDates.bulkCreate(unavailableDates);
 
-	// Populate invigilators
+	// Populate team members
 	const teamMembers = JSON.parse(fs.readFileSync('compre-data/course_team_members.json'));
 	await db.public.statics.teamMembers.bulkCreate(teamMembers);
+
+	// Populate rooms
+	const rooms = JSON.parse(fs.readFileSync('compre-data/room_data.json'));
+	await db.public.statics.rooms.bulkCreate(rooms);
 
 	return;
 }
@@ -61,7 +65,6 @@ if (require.main == module) {
 		})
 		.catch((e) => {
 			// console.log(e);
-			fs.writeFileSync('error.txt', e);
 			throw e;
 		});
 	// eslint-disable-next-line no-undef
