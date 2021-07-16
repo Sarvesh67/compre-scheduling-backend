@@ -4,10 +4,10 @@ const { route } = require('./user.route');
 
 const router = express.Router()
 
-router.get('/', scheduleControllers.getAll);
+router.post('/', scheduleControllers.getAll);
 router.post('/:userId', scheduleControllers.create);
 router.delete('/:id', scheduleControllers.delete);
 router.put('/:id', scheduleControllers.update);
-router.get('/:id', scheduleControllers.get);
+router.post('/:id', scheduleControllers.get);
 
 module.exports = router;
