@@ -63,8 +63,8 @@ const login = async (req, res) => {
 			})
 		}
 		else{
-			return res.status(200).json({
-				msg: 'Email or Password does not exist',
+			return res.status(401).json({
+				msg: 'Unauthorized Access',
 			})
 		}
 	} catch (error) {
