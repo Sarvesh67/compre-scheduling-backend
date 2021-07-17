@@ -1,7 +1,5 @@
 const express = require('express')
 const db = require('../database/db')
-const examRoom = require('../database/models/schedule/examRoom')
-const invigilatorsAlloted = require('../database/models/schedule/invigilatorsAlloted')
 
 const sched = db.public.schedules
 const statics = db.public.statics
@@ -18,7 +16,11 @@ const deleteUnwantedExamRooms = async (wantedRooms, examId) => {
 
 	const roomsToDelete = rooms.filter(x => !wantedRoomIds.includes(x.id))
 	for (room of roomsToDelete) {
-		await room.destroy()
+		await sched.examRoom.destroy({
+			where: {
+				id: invig.id
+			}
+		})
 	}
 }
 
@@ -34,7 +36,11 @@ const deleteUnwantedInvigilators = async (wantedInvigilators, examRoomId) => {
 
 	const invigilatorsToDelete = invigils.filter(x => !wantedInvigilatorIds.includes(x.id))
 	for (invig of invigilatorsToDelete) {
-		await invig.destroy()
+		await sched.invigilatorsAlloted.destroy({
+			where: {
+				id: invig.id
+			}
+		})
 	}
 }
 
