@@ -1,38 +1,89 @@
 const express = require('express')
 const db = require('../database/db')
-const { statics } = require('../database/models/model')
 const examRoom = require('../database/models/schedule/examRoom')
 const invigilatorsAlloted = require('../database/models/schedule/invigilatorsAlloted')
 
 const sched = db.public.schedules
-const stat = db.public.statics
+const statics = db.public.statics
 
-function upsertExamRoom(values, condition) {
-    return sched.examRoom
-        .findOne({ where: condition })
-        .then(function(obj) {
-            // update
-            if(obj)
-                return obj.update(values, {
-					where: condition
-				});
-            // insert
-            return sched.examRoom.create(values);
-        })
+const deleteUnwantedExamRooms = async (wantedRooms, examId) => {
+	const wantedRoomIds = wantedRooms.map(x => x.id)
+
+	// fetch images
+	const rooms = await sched.examRoom.findAll({
+		where: {
+			id: examId,
+		}
+	})
+
+	const roomsToDelete = rooms.filter(x => !wantedRoomIds.includes(x.id))
+	for (room of roomsToDelete) {
+		await room.destroy()
+	}
 }
 
-function upsertInvigilator(values, condition) {
-    return sched.invigilatorsAlloted
-        .findOne({ where: condition })
-        .then(function(obj) {
-            // update
-            if(obj)
-                return obj.update(values, {
-					where: condition
-				});
-            // insert
-            return sched.invigilatorsAlloted.create(values);
-        })
+const deleteUnwantedInvigilators = async (wantedInvigilators, examRoomId) => {
+	const wantedInvigilatorIds = wantedInvigilators.map(x => x.id)
+
+	// fetch images
+	const invigils = await sched.invigilatorsAlloted.findAll({
+		where: {
+			id: examRoomId,
+		}
+	})
+
+	const invigilatorsToDelete = invigils.filter(x => !wantedInvigilatorIds.includes(x.id))
+	for (invig of invigilatorsToDelete) {
+		await invig.destroy()
+	}
+}
+
+function upsertExamRoom(values, room_id) {
+    if(room_id){
+		return sched.examRoom
+			.findOne({ where: {
+				id: room_id
+			} })
+			.then(function(obj) {
+				// update
+				if(obj)
+					return obj.update(values, {
+						where: {
+							id: room_id
+						},
+						returning: true
+					});
+				// insert
+				return sched.examRoom.create(values);
+			})
+	}
+	else {
+		return sched.examRoom.create(values);
+	}
+}
+
+function upsertInvigilator(values, invig_id) {
+    if(invig_id){
+		return sched.invigilatorsAlloted
+			.findOne({ where: {
+				id: invig_id
+			} })
+			.then(function(obj) {
+				// update
+				if(obj)
+					return obj.update(values, {
+						where: {
+							id: invig_id
+						},
+						returning: true
+					});
+				// insert
+				return sched.invigilatorsAlloted.create(values);
+			})
+	}
+	else {
+		return sched.invigilatorsAlloted.create(values);
+	}
 }
 
 const create = async (req, res) => {
@@ -132,8 +183,20 @@ const update = async (req, res) => {
 		const updateSched = req.body.schedule;
 		const id = req.params.id;
 		const exams = req.body.exams;
-		const updatedSchedule = await sched.schedules.update(updateSched, { where: { id: id }, returning: true });
-
+		var updatedSchedule;
+		if(updateSched != null){
+			updatedSchedule = await sched.schedules.update(updateSched, { where: { id: id }, returning: true });
+		}
+		else {
+			updatedSchedule = await sched.schedules.findByPk(id);
+		}
+		//console.log(exams);
+		if(exams == null){
+			return res.status(200).json({
+				msg: 'Schedule Details Successfully updated!',
+				schedule: updatedSchedule
+			});
+		}
 		exams.forEach(async (exam) => {
 			//update the exam block
 			const exam_id = exam.id;
@@ -145,14 +208,31 @@ const update = async (req, res) => {
 			})
 			//reading the exam rooms
 			const examRooms = exam.exam_rooms;
+
+			if(examRooms == null){
+				return;
+			}
+
+			deleteUnwantedExamRooms(examRooms,id);
+
 			examRooms.forEach(async (room) =>{
 				//update exam room
 				const room_id = room.id;
-				await upsertExamRoom(room, {
-					id: room_id
-				})
+				const newRoom = await upsertExamRoom(room, room_id)
 				//reading the invigilators Alloted
+
+				if(room_id == null){
+					room_id = newRoom.id;
+				}
+
 				const invigilatorsAlloted = room.invigilatorsAlloteds;
+
+				if(invigilatorsAlloted == null){
+					return;
+				}
+
+				deleteUnwantedInvigilators(invigilatorsAlloted, room_id);
+
 				invigilatorsAlloted.forEach(async(invig) => {
 					//update invigilator Alloted
 					const invig_id = invig.id;
