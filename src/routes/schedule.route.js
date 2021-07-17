@@ -5,7 +5,7 @@ const { route } = require('./user.route');
 const router = express.Router()
 
 router.post('/', scheduleControllers.getAll);
-router.post('/user/:userId', scheduleControllers.create);
+router.post('/create/:userId', scheduleControllers.create);
 router.delete('/:id', scheduleControllers.delete);
 router.put('/:id', scheduleControllers.update);
 router.post('/:id', scheduleControllers.get);
