@@ -15,7 +15,10 @@ module.exports = sequelize.define(
 			type: DataTypes.TEXT
 		},
 		psrn_no: {
-			type: DataTypes.TEXT
+			type: DataTypes.TEXT,
+			unique: true,
+			allowNull: false,
+			field: 'invigilators_second_id'
 		},
 		dept: {
 			type: DataTypes.TEXT
@@ -34,10 +37,19 @@ module.exports = sequelize.define(
 		},
 		mobile: {
 			type: DataTypes.TEXT
+		},
+		assignedDuties: {
+			type: DataTypes.INTEGER
 		}
 	},
 	{
 		underscored: true,
-		timestamps: true
+		timestamps: true,
+		indexes: [
+			{
+				unique: true,
+				fields: ['invigilators_second_id']
+			}
+		]
 	}
 );

@@ -12,7 +12,10 @@ module.exports = sequelize.define(
 			autoIncrement: true
 		},
 		bits_id: {
-			type: DataTypes.TEXT
+			type: DataTypes.TEXT,
+			allowNull: false,
+			field: 'course_second_id',
+			unique: true
 		},
 		title: {
 			type: DataTypes.TEXT
@@ -25,10 +28,19 @@ module.exports = sequelize.define(
 		},
 		discipline: {
 			type: DataTypes.TEXT
+		},
+		block: {
+			type: DataTypes.TEXT
 		}
 	},
 	{
 		underscored: true,
-		timestamps: true
+		timestamps: true,
+		indexes: [
+			{
+				unique: true,
+				fields: ['course_second_id']
+			}
+		]
 	}
 );

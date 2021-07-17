@@ -3,7 +3,7 @@ const DataTypes = db.DataTypes;
 const sequelize = db.conn;
 
 module.exports = sequelize.define(
-	'unavailableDates',
+	'unavailable_dates',
 	{
 		id: {
 			type: DataTypes.BIGINT,
@@ -12,7 +12,7 @@ module.exports = sequelize.define(
 			autoIncrement: true
 		},
 		unavailable_date: {
-			type: DataTypes.TIME
+			type: DataTypes.BIGINT
 		}
 	},
 	{

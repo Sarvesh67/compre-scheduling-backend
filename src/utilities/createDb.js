@@ -1,4 +1,31 @@
 const db = require('../database/db');
+const fs = require('fs');
+
+async function public_force() {
+	await db.conn.sync({ force: true });
+
+	// Populate courses
+	const courses = JSON.parse(fs.readFileSync('compre-data/courses.json'));
+	await db.public.statics.courses.bulkCreate(courses);
+
+	// Populate invigilators
+	const invigilators = JSON.parse(fs.readFileSync('compre-data/invigilators.json'));
+	await db.public.statics.invigilators.bulkCreate(invigilators);
+
+	// Populate unavailable dates
+	const unavailableDates = JSON.parse(fs.readFileSync('compre-data/unavailable_dates.json'));
+	await db.public.statics.unavailableDates.bulkCreate(unavailableDates);
+
+	// Populate team members
+	const teamMembers = JSON.parse(fs.readFileSync('compre-data/course_team_members.json'));
+	await db.public.statics.teamMembers.bulkCreate(teamMembers);
+
+	// Populate rooms
+	const rooms = JSON.parse(fs.readFileSync('compre-data/room_data.json'));
+	await db.public.statics.rooms.bulkCreate(rooms);
+
+	return;
+}
 
 async function main(testing) {
 	/* var schemas = [
@@ -12,7 +39,11 @@ async function main(testing) {
 	//
 	await db.conn.sync({ force: testing });
 
-	if (!testing) console.log('\n\n\n\n\n');
+	if (testing) {
+		await public_force();
+	} else {
+		console.log('\n\n\n\n\n');
+	}
 	return;
 }
 
@@ -33,6 +64,9 @@ if (require.main == module) {
 				});
 		})
 		.catch((e) => {
+			// console.log(e);
 			throw e;
 		});
+	// eslint-disable-next-line no-undef
+	process.exit[0];
 }
