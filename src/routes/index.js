@@ -14,7 +14,7 @@ router.use('/user', userRoutes);
 router.use('/exam', examRoutes);
 router.use('/room', roomRoutes);
 router.use('/examroom', examRoomRoutes);
-router.use('/allotted', invigilatorsAllottedRoutes)
+router.use('/allotted', invigilatorsAllottedRoutes);
 router.use('/invigilator', invigilatorRoutes);
 router.use('/course', courseRoutes);
 router.use('/schedule', scheduleRoutes);

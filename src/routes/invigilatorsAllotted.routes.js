@@ -4,8 +4,8 @@ const invigilatorsAllottedController = require('../controllers/invigilatorsAllot
 const router = express.Router();
 
 router.post('/create', invigilatorsAllottedController.create);
-router.get('/get/:id', invigilatorsAllottedController.get);
-router.get('/getAll', invigilatorsAllottedController.getAll);
+router.post('/get/:id', invigilatorsAllottedController.get);
+router.post('/getAll', invigilatorsAllottedController.getAll);
 router.put('/update/:id', invigilatorsAllottedController.update);
 router.delete('/delete/:id', invigilatorsAllottedController.delete);
 
