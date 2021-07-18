@@ -18,7 +18,7 @@ const deleteUnwantedExamRooms = async (wantedRooms, examId) => {
 	for (room of roomsToDelete) {
 		await sched.examRoom.destroy({
 			where: {
-				id: invig.id
+				id: room.id
 			}
 		})
 	}
@@ -168,7 +168,12 @@ const get = async(req, res) => {
 					}
 				]
 			},
-			statics.courses
+			{
+				model : statics.courses,
+				include: [
+					statics.invigilators
+				]
+			}
 		]
 		})
 		return res.status(200).json({
@@ -251,7 +256,7 @@ const update = async (req, res) => {
 
 		return res.status(200).json({
 			msg: 'Schedule Details Successfully updated!',
-			schedule: updatedSchedule[1][0]
+			schedule: updatedSchedule
 		});
 	} catch (e) {
 		console.log(e);
