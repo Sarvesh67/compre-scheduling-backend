@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 const e = require('express');
 const db = require('../database/db');
 
@@ -9,7 +10,7 @@ const rooms = db.public.statics.rooms;
  * @returns {Promise<e.Response>}
  */
 
- const create = async (req, res) => {
+const create = async (req, res) => {
 	try {
 		const room = req.body;
 		const roomsaved = await rooms.create(room);

@@ -1,7 +1,7 @@
-const express = require('express')
+// const express = require('express');
 const db = require('../database/db');
 
-const schedules = db.public.schedules
+const schedules = db.public.schedules;
 
 const create = async (req, res) => {
 	try {
@@ -10,41 +10,40 @@ const create = async (req, res) => {
 			where: {
 				email: user.email
 			}
-		})
-		if(user_count.length > 0){
+		});
+		if (user_count.length > 0) {
 			return res.status(200).json({
-				msg: 'Email Already Exists',
+				msg: 'Email Already Exists'
 			});
-		}
-		else{
-			const usersaved = await schedules.user.create(user)
+		} else {
+			const usersaved = await schedules.user.create(user);
 			return res.status(200).json({
 				msg: 'User successfully created!',
 				user: usersaved
 			});
 		}
 	} catch (error) {
-		console.log(error)
+		console.log(error);
 		return res.status(500).json({
 			msg: 'Internal server error :('
-		})
+		});
 	}
-}
+};
 
-const getAll = async (req, res) =>{
+const getAll = async (req, res) => {
 	try {
-		const users = await schedules.user.findAll({})
+		const users = await schedules.user.findAll({});
 		return res.status(200).json({
 			msg: 'Users successfully retireved',
 			users: users
-		})
+		});
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({
 			msg: 'Internal server error :('
 		});
 	}
-}
+};
 
 const login = async (req, res) => {
 	try {
@@ -55,17 +54,16 @@ const login = async (req, res) => {
 				email: email,
 				password: pwd
 			}
-		})
-		if (user.length > 0){
+		});
+		if (user.length > 0) {
 			return res.status(200).json({
 				msg: 'Users successfully Logged In',
 				user: user
-			})
-		}
-		else{
+			});
+		} else {
 			return res.status(401).json({
-				msg: 'Unauthorized Access',
-			})
+				msg: 'Unauthorized Access'
+			});
 		}
 	} catch (error) {
 		console.log(error);
@@ -73,7 +71,7 @@ const login = async (req, res) => {
 			msg: 'Internal server error :('
 		});
 	}
-}
+};
 
 const getSchedules = async (req, res) => {
 	try {
@@ -82,18 +80,18 @@ const getSchedules = async (req, res) => {
 			where: {
 				user_id: id
 			}
-		})
+		});
 		return res.status(200).json({
 			msg: 'Schedules Retireved',
 			sched
-		})
+		});
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({
 			msg: 'Internal server error :('
 		});
 	}
-}
+};
 
 const purgeAll = async (req, res) => {
 	try {
@@ -102,14 +100,14 @@ const purgeAll = async (req, res) => {
 		});
 		return res.status(200).json({
 			msg: 'All users purged'
-		})
+		});
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({
 			msg: 'Internal server error :('
 		});
 	}
-}
+};
 
 const deleteUser = async (req, res) => {
 	try {
@@ -120,14 +118,14 @@ const deleteUser = async (req, res) => {
 		});
 		return res.status(200).json({
 			msg: 'User Purged'
-		})
+		});
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({
 			msg: 'Internal server error :('
 		});
 	}
-}
+};
 
 module.exports = {
 	create: create,

@@ -7,7 +7,7 @@ const invigilatorsAllottedRoutes = require('./invigilatorsAllotted.routes');
 const invigilatorRoutes = require('./invigilator.route');
 const courseRoutes = require('./course.route');
 const scheduleRoutes = require('./schedule.route');
-const outputRoutes = require('./output.route')
+const outputRoutes = require('./output.route');
 
 const router = express.Router();
 
@@ -19,6 +19,6 @@ router.use('/allotted', invigilatorsAllottedRoutes);
 router.use('/invigilator', invigilatorRoutes);
 router.use('/course', courseRoutes);
 router.use('/schedule', scheduleRoutes);
-router.use('/output', outputRoutes)
+router.use('/output', outputRoutes);
 
 module.exports = router;

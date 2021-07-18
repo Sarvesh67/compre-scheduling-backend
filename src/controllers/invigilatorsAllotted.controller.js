@@ -5,24 +5,23 @@ const db = require('../database/db');
 const schedules = db.public.schedules;
 
 const includeMetadata = {
-    include: [
-        {
-            model: db.public.schedules.examRoom,
-            include: [
-                {
-                    model: db.public.statics.rooms
-                },
-                {
-                    model: db.public.schedules.exam
-                }
-            ]
-        },
-        {
-            model: db.public.statics.invigilators
-        }
-    ]
-}
-
+	include: [
+		{
+			model: db.public.schedules.examRoom,
+			include: [
+				{
+					model: db.public.statics.rooms
+				},
+				{
+					model: db.public.schedules.exam
+				}
+			]
+		},
+		{
+			model: db.public.statics.invigilators
+		}
+	]
+};
 
 /**
  *
@@ -99,7 +98,10 @@ const update = async (req, res) => {
 	try {
 		const update = req.body;
 		const id = req.params.id;
-		const updatedInvigilatorsAllotted = await schedules.invigilatorsAlloted.update(update, { where: { id: id }, returning: true });
+		const updatedInvigilatorsAllotted = await schedules.invigilatorsAlloted.update(update, {
+			where: { id: id },
+			returning: true
+		});
 		return res.status(200).json({
 			msg: 'Invigilators Allotted Entry updated successfully!',
 			invigilatorAllotted: updatedInvigilatorsAllotted[1][0]
