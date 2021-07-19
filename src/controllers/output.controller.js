@@ -255,7 +255,13 @@ const getOutput3 = async (req, res) => {
 
 		XLSX.writeFile(wb, 'output3.xlsx');
 
-		return res.status(200).json({ courses });
+		// res.status(200).json({ courses });
+
+		XLSX.writeFile(wb, 'output3.xlsx');
+		var file = fs.readFileSync('output3.xlsx');
+		res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output2.xlsx');
+		res.end(file);
 	} catch (e) {
 		console.log(e);
 		return res.status(500).json({
