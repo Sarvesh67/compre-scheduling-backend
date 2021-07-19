@@ -228,10 +228,6 @@ const getOutput3 = async (req, res) => {
 			['', '']
 		];
 
-		const wb = XLSX.utils.book_new();
-
-		const ws = XLSX.utils.aoa_to_sheet(course_data);
-
 		const invigilators = [];
 		courses.invigilators.forEach((invigilator) => {
 			const invigilator_data = {
@@ -250,18 +246,20 @@ const getOutput3 = async (req, res) => {
 			invigilators.push(invigilator_data);
 		});
 
+		const wb = XLSX.utils.book_new();
+
+		const ws = XLSX.utils.aoa_to_sheet(course_data);
+
 		XLSX.utils.sheet_add_json(ws, invigilators, { origin: -1 });
 		XLSX.utils.book_append_sheet(wb, ws, 'Output3');
 
-		XLSX.writeFile(wb, 'output3.xlsx');
-
-		// res.status(200).json({ courses });
-
-		XLSX.writeFile(wb, 'output3.xlsx');
-		var file = fs.readFileSync('output3.xlsx');
 		res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output2.xlsx');
-		res.end(file);
+		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output3.xlsx');
+
+		const out = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+		// eslint-disable-next-line no-undef
+		res.end(Buffer.from(s2ab(out)));
 	} catch (e) {
 		console.log(e);
 		return res.status(500).json({
@@ -282,35 +280,128 @@ const getOutput4 = async (req, res) => {
 		const invigilatorId = req.params.invigilatorId;
 		const duty_details = await statics.invigilators.findOne({
 			where: { psrn_no: invigilatorId },
-			include: {
-				model: sched.invigilatorsAlloted,
-				include: [
-					{
-						model: sched.examRoom,
-						include: [
-							{
-								model: sched.exam,
-								include: [
-									{
-										model: statics.courses,
-										include: [
-											{
-												model: statics.invigilators,
-												attributes: ['mobile', 'email'],
-												through: {
-													where: { status: 'IC' }
+			include: [
+				{
+					model: sched.invigilatorsAlloted,
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id']
+					},
+					include: [
+						{
+							model: sched.examRoom,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt', 'room_id', 'exam_id']
+							},
+							include: [
+								{
+									model: sched.exam,
+									attributes: {
+										exclude: ['createdAt', 'updatedAt', 'course_id']
+									},
+									include: [
+										{
+											model: statics.courses,
+											attributes: {
+												exclude: ['createdAt', 'updatedAt', 'block_id']
+											},
+											include: [
+												{
+													model: statics.invigilators,
+													attributes: ['mobile', 'email'],
+													through: {
+														where: { status: 'ic' }
+													}
 												}
-											}
-										]
+											]
+										},
+										{
+											model: sched.schedules,
+											attributes: {
+												exclude: ['createdAt', 'updatedAt']
+											},
+											include: [
+												{
+													model: sched.user,
+													attributes: {
+														exclude: ['createdAt']
+													}
+												}
+											]
+										}
+									]
+								},
+								{
+									model: statics.rooms,
+									attributes: {
+										exclude: ['createdAt', 'updatedAt']
 									}
-								]
-							}
-						]
+								}
+							]
+						}
+					]
+				},
+				{
+					model: statics.courses,
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'block_id']
+					},
+					through: {
+						attributes: ['status']
 					}
-				]
-			}
+				}
+			]
 		});
-		return res.status(200).json({ duty_details });
+
+		const invigilator_data = [
+			['id', duty_details.id],
+			['name', duty_details.name],
+			['psrn_no', duty_details.psrn_no],
+			['dept', duty_details.dept],
+			['stat1', duty_details.stat1],
+			['stat2', duty_details.stat2],
+			['email', duty_details.email],
+			['duties_to_be_alloted', duty_details.duties_to_be_alloted],
+			['mobile', duty_details.mobile],
+			['assignedDuties', duty_details.assignedDuties],
+			['', '']
+			// status: duty_details.courses.courses_invigilators.status
+		];
+
+		const duties = [];
+		duty_details.invigilatorsAlloteds.forEach((allotment) => {
+			const duty = {
+				Date: allotment.exam_room.exam.date,
+				Time: allotment.exam_room.exam.time,
+				'Course No': allotment.exam_room.exam.course.bits_id,
+				'Course Title': allotment.exam_room.exam.course.title,
+				'IC Mobile': allotment.exam_room.exam.course.invigilators[0].mobile,
+				'IC Email': allotment.exam_room.exam.course.invigilators[0].email,
+				'Room No': allotment.exam_room.room.name,
+				'Capacity of course in the room': allotment.exam_room.capacity,
+				'Schedule Name': allotment.exam_room.exam.schedule.name,
+				'Name of scheduler': allotment.exam_room.exam.schedule.user.name,
+				'Email of scheduler': allotment.exam_room.exam.schedule.user.email,
+				'Total Room Capacity': allotment.exam_room.room.capacity
+			};
+			duties.push(duty);
+		});
+
+		console.log(duties);
+
+		const wb = XLSX.utils.book_new();
+
+		const ws = XLSX.utils.aoa_to_sheet(invigilator_data);
+
+		XLSX.utils.sheet_add_json(ws, duties, { origin: -1 });
+		XLSX.utils.book_append_sheet(wb, ws, 'Output4');
+
+		res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output4.xlsx');
+
+		const out = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+		console.log('finished');
+		// eslint-disable-next-line no-undef
+		res.end(Buffer.from(s2ab(out)));
 	} catch (e) {
 		console.log(e);
 		return res.status(500).json({
@@ -326,3 +417,11 @@ module.exports = {
 	getOutput3: getOutput3,
 	getOutput4: getOutput4
 };
+
+//s2ab method
+function s2ab(s) {
+	var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
+	var view = new Uint8Array(buf); //create uint8array as viewer
+	for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff; //convert to octet
+	return buf;
+}

@@ -6,7 +6,8 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "nodemon src/app.js",
-		"create:db": "node src/utilities/createDb.js"
+		"create:db": "node src/utilities/createDb.js",
+		"create:dummydb": "npm run create:db && node src/utilities/dummyDb.js"
 	},
 	"repository": {
 		"type": "git",

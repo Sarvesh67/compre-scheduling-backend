@@ -2,8 +2,6 @@ const db = require('../database/db');
 const fs = require('fs');
 
 async function public_force() {
-	await db.conn.sync({ force: true });
-
 	// Populate courses
 	const courses = JSON.parse(fs.readFileSync('compre-data/courses.json'));
 	await db.public.statics.courses.bulkCreate(courses);
