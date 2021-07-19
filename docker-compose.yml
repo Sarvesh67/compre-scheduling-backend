@@ -16,6 +16,8 @@ services:
         depends_on:
             - compre-scheduling-db
         working_dir: /usr/src/app
+        environment:
+            NODE_ENV: docker
     compre-scheduling-db:
         container_name: compre-scheduling-db
         image: postgres:12
