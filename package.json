@@ -10,6 +10,7 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "NODE_ENV=production node src/app.js",
 		"start:dev": "NODE_ENV=development nodemon src/app.js",
+		"start:docker": "NODE_ENV=docker nodemon src/app.js",
 		"create:db": "node src/utilities/createDb.js",
 		"create:dummydb": "npm run create:db && node src/utilities/dummyDb.js",
 		"build:dev": "npm run create:db && npm run create:dummydb"

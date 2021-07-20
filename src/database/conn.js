@@ -17,8 +17,8 @@ if (process.env.NODE_ENV === 'production') {
 			}
 		}
 	});
-} else if (process.env.NODE_ENV === 'development') {
-	db.conn = new Sequelize(config.db[process.env.NODE_ENV]);
+} else {
+	db.conn = new Sequelize(config.db);
 }
 
 db.connectDb = () => {
