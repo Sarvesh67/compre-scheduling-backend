@@ -25,12 +25,31 @@ const config = Object.freeze(
 	new (function () {
 		this.env = process.env.NODE_ENV || 'development';
 		this.db = {
-			dialect: 'postgres',
-			host: this.env === 'docker' ? 'compre-scheduling-db' : process.env.DB_HOST || 'localhost',
-			port: process.env.DB_PORT || 5432,
-			username: process.env.DB_USER || 'postgres',
-			password: process.env.DB_PASSWD || 'eatsleepcode',
-			database: process.env.DB_DATABASE || 'compreschedule'
+			development: {
+				dialect: 'postgres',
+				host: this.env === 'docker' ? 'compre-scheduling-db' : process.env.DB_HOST || 'localhost',
+				port: process.env.DB_PORT || 5432,
+				username: process.env.DB_USER || 'postgres',
+				password: process.env.DB_PASSWD || 'eatsleepcode',
+				database: process.env.DB_DATABASE || 'compreschedule',
+				pool: {
+					max: 10,
+					acquire: 10000,
+					maxUses: 3,
+					min: 1
+				}
+			},
+			production: {
+				use_env_variable: 'DATABASE_URL',
+				dialect: 'postgres',
+				protocol: 'postgres',
+				dialectOptions: {
+					ssl: {
+						require: true,
+						rejectUnauthorized: false
+					}
+				}
+			}
 		};
 		this.app = {
 			host: process.env.HOST || 'localhost',
