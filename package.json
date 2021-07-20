@@ -12,7 +12,6 @@
 		"start:dev": "NODE_ENV=development nodemon src/app.js",
 		"create:db": "node src/utilities/createDb.js",
 		"create:dummydb": "npm run create:db && node src/utilities/dummyDb.js",
-		"build": "npm run create:db",
 		"build:dev": "npm run create:db && npm run create:dummydb"
 	},
 	"repository": {
