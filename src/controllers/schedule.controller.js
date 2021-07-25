@@ -247,9 +247,7 @@ const update = async (req, res) => {
 				invigilatorsAlloted.forEach(async (invig) => {
 					//update invigilator Alloted
 					const invig_id = invig.id;
-					await upsertInvigilator(invig, {
-						id: invig_id
-					});
+					await upsertInvigilator(invig, invig_id);
 				});
 			});
 		});
