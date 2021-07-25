@@ -10,6 +10,21 @@ module.exports = sequelize.define(
 			primaryKey: true,
 			allowNull: false,
 			autoIncrement: true
+		},
+		exam_room_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueInvigilatorsAlloted'
+		},
+		invigilators_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueInvigilatorsAlloted'
+		},
+		schedule_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueInvigilatorsAlloted'
 		}
 	},
 	{

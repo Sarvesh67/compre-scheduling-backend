@@ -13,6 +13,21 @@ module.exports = sequelize.define(
 		},
 		capacity: {
 			type: DataTypes.INTEGER
+		},
+		exam_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueExamRooms'
+		},
+		room_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueExamRooms'
+		},
+		schedule_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueExamRooms'
 		}
 	},
 	{

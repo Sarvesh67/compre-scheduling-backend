@@ -33,7 +33,12 @@ statics.courses.belongsToMany(statics.invigilators, {
 schedules.user.hasMany(schedules.schedules, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 schedules.schedules.belongsTo(schedules.user, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 schedules.schedules.hasMany(schedules.exam, { foreignKey: 'schedule_id', onDelete: 'CASCADE' });
+schedules.schedules.hasMany(schedules.examRoom, { foreignKey: 'schedule_id', onDelete: 'CASCADE' });
+schedules.schedules.hasMany(schedules.invigilatorsAlloted, { foreignKey: 'schedule_id', onDelete: 'CASCADE' });
+
 schedules.exam.belongsTo(schedules.schedules, { foreignKey: 'schedule_id', onDelete: 'CASCADE' });
+schedules.examRoom.belongsTo(schedules.schedules, { foreignKey: 'schedule_id', onDelete: 'CASCADE' });
+schedules.invigilatorsAlloted.belongsTo(schedules.schedules, { foreignKey: 'schedule_id', onDelete: 'CASCADE' });
 
 statics.courses.hasMany(schedules.exam, {
 	foreignKey: 'course_id',
@@ -64,7 +69,7 @@ schedules.exam.belongsTo(statics.courses, {
 }); */
 
 statics.rooms.hasMany(schedules.examRoom, {
-	foreignKey: 'id',
+	foreignKey: 'room_id',
 	onDelete: 'CASCADE'
 });
 schedules.examRoom.belongsTo(schedules.exam, {

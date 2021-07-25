@@ -74,48 +74,58 @@ async function public_force() {
 	await sched.examRoom.create({
 		exam_id: 1,
 		room_id: 1,
+		schedule_id: schedSaved.id,
 		capacity: 20
 	});
 	await sched.examRoom.create({
 		exam_id: 2,
 		room_id: 1,
+		schedule_id: schedSaved.id,
 		capacity: 20
 	});
 	await sched.examRoom.create({
 		exam_id: 2,
 		room_id: 2,
+		schedule_id: schedSaved.id,
 		capacity: 40
 	});
 	await sched.examRoom.create({
 		exam_id: 3,
 		room_id: 3,
+		schedule_id: schedSaved.id,
 		capacity: 20
 	});
 
 	// Populate invigilator alloted
 	await sched.invigilatorsAlloted.create({
 		exam_room_id: 1,
-		invigilators_id: 1
+		invigilators_id: 1,
+		schedule_id: schedSaved.id
 	});
 	await sched.invigilatorsAlloted.create({
 		exam_room_id: 2,
-		invigilators_id: 1
+		invigilators_id: 1,
+		schedule_id: schedSaved.id
 	});
 	await sched.invigilatorsAlloted.create({
 		exam_room_id: 3,
-		invigilators_id: 1
+		invigilators_id: 1,
+		schedule_id: schedSaved.id
 	});
 	await sched.invigilatorsAlloted.create({
 		exam_room_id: 4,
-		invigilators_id: 2
+		invigilators_id: 2,
+		schedule_id: schedSaved.id
 	});
 	await sched.invigilatorsAlloted.create({
 		exam_room_id: 2,
-		invigilators_id: 2
+		invigilators_id: 2,
+		schedule_id: schedSaved.id
 	});
 	await sched.invigilatorsAlloted.create({
 		exam_room_id: 3,
-		invigilators_id: 2
+		invigilators_id: 2,
+		schedule_id: schedSaved.id
 	});
 
 	return;

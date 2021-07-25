@@ -16,6 +16,16 @@ module.exports = sequelize.define(
 		},
 		time: {
 			type: DataTypes.ENUM('9-12', '2-5') // Add enumerations for compre times here
+		},
+		schedule_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueExams'
+		},
+		course_id: {
+			type: DataTypes.BIGINT,
+			allowNull: false,
+			unique: 'UniqueExams'
 		}
 	},
 	{
