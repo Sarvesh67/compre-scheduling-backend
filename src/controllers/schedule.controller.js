@@ -10,7 +10,7 @@ const deleteUnwantedExamRooms = async (wantedRooms, examId) => {
 	// fetch images
 	const rooms = await sched.examRoom.findAll({
 		where: {
-			id: examId
+			exam_id: examId
 		}
 	});
 
@@ -30,7 +30,7 @@ const deleteUnwantedInvigilators = async (wantedInvigilators, examRoomId) => {
 	// fetch images
 	const invigils = await sched.invigilatorsAlloted.findAll({
 		where: {
-			id: examRoomId
+			exam_room_id: examRoomId
 		}
 	});
 
@@ -44,53 +44,57 @@ const deleteUnwantedInvigilators = async (wantedInvigilators, examRoomId) => {
 	}
 };
 
-function upsertExamRoom(values, room_id) {
+const upsertExamRoom = async (values, room_id) => {
 	if (room_id) {
-		return sched.examRoom
+		return await sched.examRoom
 			.findOne({
 				where: {
 					id: room_id
 				}
 			})
-			.then(function (obj) {
+			.then(async (obj) => {
 				// update
-				if (obj)
-					return obj.update(values, {
+				if (obj){
+					console.log(obj);
+					return await sched.examRoom.update(values, {
 						where: {
 							id: room_id
 						},
 						returning: true
 					});
+				}
 				// insert
-				return sched.examRoom.create(values);
+				return await sched.examRoom.create(values);
 			});
 	} else {
-		return sched.examRoom.create(values);
+		return await sched.examRoom.create(values);
 	}
 }
 
-function upsertInvigilator(values, invig_id) {
+const upsertInvigilator = async (values, invig_id) => {
 	if (invig_id) {
-		return sched.invigilatorsAlloted
+		return await sched.invigilatorsAlloted
 			.findOne({
 				where: {
 					id: invig_id
 				}
 			})
-			.then(function (obj) {
+			.then(async (obj) => {
 				// update
-				if (obj)
-					return obj.update(values, {
+				if (obj){
+					console.log(obj);
+					return await sched.invigilatorsAlloted.update(values, {
 						where: {
 							id: invig_id
 						},
 						returning: true
 					});
+				}
 				// insert
-				return sched.invigilatorsAlloted.create(values);
+				return await sched.invigilatorsAlloted.create(values);
 			});
 	} else {
-		return sched.invigilatorsAlloted.create(values);
+		return await sched.invigilatorsAlloted.create(values);
 	}
 }
 
@@ -160,20 +164,51 @@ const get = async (req, res) => {
 			where: {
 				schedule_id: schedule.id
 			},
+			attributes:{
+				exclude:['course_id','createdAt','updatedAt']
+			},
 			include: [
 				{
 					model: sched.examRoom,
+					attributes:{
+						exclude:['room_id','exam_id','schedule_id','createdAt','updatedAt']
+					},
 					include: [
-						statics.rooms,
+						{
+							model:statics.rooms,
+							attributes:{
+								exclude:['createdAt','updatedAt']
+							}
+						},
 						{
 							model: sched.invigilatorsAlloted,
-							include: [statics.invigilators]
+							attributes:{
+								exclude:['schedule_id','createdAt','updatedAt','exam_room_id','invigilators_id']
+							},
+							include: [
+								{
+									model:statics.invigilators,
+									attributes:{
+										exclude:['createdAt','updatedAt','mobile']
+									}
+								}
+							]
 						}
 					]
 				},
 				{
 					model: statics.courses,
-					include: [statics.invigilators]
+					attributes:{
+						exclude:['createdAt','updatedAt','block_id']
+					},
+					include: [
+						{
+							model:statics.invigilators,
+							attributes:{
+								exclude:['createdAt','updatedAt','mobile']
+							}
+						}
+					]
 				}
 			]
 		});
@@ -224,7 +259,7 @@ const update = async (req, res) => {
 				return;
 			}
 
-			deleteUnwantedExamRooms(examRooms, id);
+			await deleteUnwantedExamRooms(examRooms, exam_id);
 
 			examRooms.forEach(async (room) => {
 				//update exam room
@@ -242,7 +277,7 @@ const update = async (req, res) => {
 					return;
 				}
 
-				deleteUnwantedInvigilators(invigilatorsAlloted, room_id);
+				await deleteUnwantedInvigilators(invigilatorsAlloted, room_id);
 
 				invigilatorsAlloted.forEach(async (invig) => {
 					//update invigilator Alloted

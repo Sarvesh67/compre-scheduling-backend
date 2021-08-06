@@ -5,30 +5,18 @@ const fs = require('fs');
 
 const db = require('../database/db');
 const { Op } = require('sequelize');
+const { forEach } = require('underscore');
+
+const sequelize = db.conn;
+
 
 const sched = db.public.schedules;
 const statics = db.public.statics;
 
-/**
- *
- * @param {e.Request} req
- * @param {e.Response} res
- * @returns {Promise<e.Response>}
- */
 const getOutput1 = async (req, res) => {
 	try {
 		var jsondata = [];
 		const scheduleId = req.params.schedId;
-		/**'
-		 * course -
-		 * title -
-		 * ic -
-		 * date -
-		 * time -
-		 * Rooms -
-		 * invigilators Required -
-		 * invgilators Given -
-		 */
 
 		const exams = await sched.exam.findAll({
 			where: {
@@ -55,7 +43,6 @@ const getOutput1 = async (req, res) => {
 		});
 
 		for (const exam of exams) {
-			//console.log(exam)
 			const course = await statics.courses.findOne({
 				where: {
 					id: exam.course_id
@@ -84,7 +71,6 @@ const getOutput1 = async (req, res) => {
 			} else {
 				time = '9:00am-12noon';
 			}
-			//console.log(roomsString)
 			const newRow = {
 				Course: course.bits_id,
 				Title: course.title,
@@ -116,12 +102,6 @@ const getOutput1 = async (req, res) => {
 	}
 };
 
-/**
- *
- * @param {e.Request} req
- * @param {e.Response} res
- * @returns {Promise<e.Response>}
- */
 const getOutput2 = async (req, res) => {
 	try {
 		var jsondata = [];
@@ -411,11 +391,87 @@ const getOutput4 = async (req, res) => {
 	}
 };
 
+const getOutput5 = async (req, res) => {
+	try {
+		var jsondata = []
+		const scheduleId = req.params.schedId;
+		const schedule = await sched.exam.findAll({
+			where: {
+				date: {
+					[Op.not]: null
+				},
+				time: {
+					[Op.not]: null
+				},
+				schedule_id: scheduleId
+			},
+			attributes: {
+				exclude: ['createdAt', 'updatedAt', 'course_id']
+			},
+			include: [
+				{
+					model: sched.examRoom,
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'room_id', 'exam_id']
+					},
+					include : [
+						{
+							model: sched.invigilatorsAlloted,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt']
+							}
+						}
+					]
+				}
+			]
+		})
+
+		dateDict = {}
+
+		schedule.forEach((exam) => {
+			const date = new Date(exam.date);
+			const dateString = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
+			
+			for(const room of exam.exam_rooms){
+				
+				for(const invi of room.invigilatorsAlloteds){
+					console.log(invi)
+					if(dateString in dateDict){
+						if(invi.invigilators_id in dateDict[dateString]){
+							dateDict[dateString][invi.invigilators_id]++;
+						}
+						else{
+							dateDict[dateString][invi.invigilators_id] = 1;
+						}
+					}
+					else{
+						dateDict[dateString] = {};
+						dateDict[dateString][invi.invigilators_id] = 1;
+					}
+				}
+			}
+		})
+
+		console.log(dateDict);
+
+		return res.status(200).json({
+			msg: 'Schedule Retrieved Successfully',
+			schedule: dateDict
+		});
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({
+			msg: 'Internal server error :('
+		});
+	}
+};
+
 module.exports = {
 	getOutput1: getOutput1,
 	getOutput2: getOutput2,
 	getOutput3: getOutput3,
-	getOutput4: getOutput4
+	getOutput4: getOutput4,
+	getOutput5: getOutput5
 };
 
 //s2ab method
