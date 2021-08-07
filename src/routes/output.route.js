@@ -8,5 +8,6 @@ router.get('/two/:schedId', outputController.getOutput2);
 router.get('/three/:bitsId', outputController.getOutput3);
 router.get('/four/:invigilatorId', outputController.getOutput4);
 router.get('/five/:schedId', outputController.getOutput5);
+router.get('/six/:schedId', outputController.getOutput6);
 
 module.exports = router;
