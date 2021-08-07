@@ -435,29 +435,57 @@ const getOutput5 = async (req, res) => {
 			for(const room of exam.exam_rooms){
 				
 				for(const invi of room.invigilatorsAlloteds){
-					console.log(invi)
-					if(dateString in dateDict){
-						if(invi.invigilators_id in dateDict[dateString]){
-							dateDict[dateString][invi.invigilators_id]++;
+					const id = invi.invigilators_id;
+					if(id in dateDict){
+						if(dateString in dateDict[id]){
+							dateDict[id][dateString]++;
 						}
 						else{
-							dateDict[dateString][invi.invigilators_id] = 1;
+							dateDict[id][dateString] = 1;
 						}
 					}
 					else{
-						dateDict[dateString] = {};
-						dateDict[dateString][invi.invigilators_id] = 1;
+						dateDict[id] = {};
+						dateDict[id][dateString] = 1;
 					}
 				}
 			}
 		})
 
-		console.log(dateDict);
+		for(const key in dateDict){
+			var value = "";
+			for(const date in dateDict[key]){
+				if(dateDict[key][date] > 1){
+					value += date + ", "
+				}
+			}
 
-		return res.status(200).json({
-			msg: 'Schedule Retrieved Successfully',
-			schedule: dateDict
-		});
+			const invigilatorData = await statics.invigilators.findByPk(key);
+
+			console.log(invigilatorData);
+
+			const newRow = {
+				name: invigilatorData.name,
+				'PSRN/System ID' : invigilatorData.psrn_no,
+				'Dates Alloted' : value
+			}
+			jsondata.push(newRow);
+		}
+
+		const wb = XLSX.utils.book_new();
+
+		const ws = XLSX.utils.json_to_sheet(jsondata);
+
+		//XLSX.utils.sheet_add_json(ws, duties, { origin: -1 });
+		XLSX.utils.book_append_sheet(wb, ws, 'Output5');
+
+		res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output5.xlsx');
+
+		const out = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+		console.log('finished');
+		// eslint-disable-next-line no-undef
+		res.end(Buffer.from(s2ab(out)));
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({
