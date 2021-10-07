@@ -181,15 +181,44 @@ const getOutput2 = async (req, res) => {
  */
 const getOutput3 = async (req, res) => {
 	try {
-		const bitsId = req.params.bitsId;
+		const id = req.params.bitsId;
+		const schedId = req.params.schedId;
 		const courses = await statics.courses.findOne({
-			where: { bits_id: bitsId },
-			include: {
-				model: statics.invigilators,
-				through: {
-					attributes: ['status']
+			where: { id: id },
+			include: [
+			{
+				model: sched.exam,
+				where: {
+					schedule_id: schedId
+				},
+				attributes: {
+					exclude: ['id','createdAt', 'updatedAt', 'course_id','schedule_id']
+				},
+				include: {
+					model: sched.examRoom,
+					attributes: {
+						exclude: ['id','createdAt', 'updatedAt', 'room_id', 'exam_id','schedule_id']
+					},
+					include: [{
+						model:sched.invigilatorsAlloted,
+						attributes: {
+							exclude: ['createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id','schedule_id']
+						},
+						include:{
+							model: statics.invigilators,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt', 'id','duties_to_be_alloted','assignedDuties']
+							}
+						}
+					},
+					{
+						model:statics.rooms,
+						attributes:['name', 'capacity']
+					}
+				]
 				}
 			}
+		]
 		});
 
 		if (!courses) {
@@ -198,33 +227,70 @@ const getOutput3 = async (req, res) => {
 			});
 		}
 
+		//Delete when working
+		// return res.status(200).json({
+		// 	courses
+		// })
+		//Delete when working
+		
+		var examDate = '';
+		var examTime = '';
+		const invigilators = [];
+		//console.log(courses.exams.exam_rooms)
+
+		for (const exams of courses.exams){
+			examDate = new Date(exams.date)
+			examTime = exams.time;
+			for(const room of exams.exam_rooms){
+				for(const invigilator of room.invigilatorsAlloteds){
+					const invigilator_data = {
+						id: invigilator.id,
+						room: room.room.name,
+						name: invigilator.invigilator.name,
+						psrn_no: invigilator.invigilator.psrn_no,
+						dept: invigilator.invigilator.dept,
+						stat1: invigilator.invigilator.stat1,
+						stat2: invigilator.invigilator.stat2,
+						email: invigilator.invigilator.email,
+						mobile: invigilator.invigilator.mobile
+					};
+					invigilators.push(invigilator_data);
+				}
+			}
+		}
+
+		
 		const course_data = [
 			['bits_id', courses.bits_id],
 			['title', courses.title],
 			['capacity', courses.capacity],
 			['invigilators_required', courses.invigilators_required],
 			['discipline', courses.discipline],
-			['block', courses.block],
+			['date', examDate.getDate().toString() +'/' + examDate.getMonth().toString() + '/' + examDate.getFullYear().toString()],
+			['Time', examTime],
 			['', '']
 		];
 
-		const invigilators = [];
-		courses.invigilators.forEach((invigilator) => {
-			const invigilator_data = {
-				id: invigilator.id,
-				name: invigilator.name,
-				psrn_no: invigilator.psrn_no,
-				dept: invigilator.dept,
-				stat1: invigilator.stat1,
-				stat2: invigilator.stat2,
-				email: invigilator.email,
-				duties_to_be_alloted: invigilator.duties_to_be_alloted,
-				mobile: invigilator.mobile,
-				assignedDuties: invigilator.assignedDuties,
-				status: invigilator.courses_invigilators.status
-			};
-			invigilators.push(invigilator_data);
-		});
+		// courses.exams.exam_rooms.forEach((room) => {
+		// 		room.invigilatorsAlloteds.forEach((invigilator) => {
+		// 		const invigilator_data = {
+		// 			id: invigilator.id,
+		// 			room: room.room.name,
+		// 			name: invigilator.invigilator.name,
+		// 			psrn_no: invigilator.invigilator.psrn_no,
+		// 			dept: invigilator.invigilator.dept,
+		// 			stat1: invigilator.invigilator.stat1,
+		// 			stat2: invigilator.invigilator.stat2,
+		// 			email: invigilator.invigilator.email,
+		// 		};
+		// 		invigilators.push(invigilator_data);
+		// 	})
+		// });
+
+		// return res.status(200).json({
+		// 	output: course_data,
+		// 	list: invigilators
+		// })
 
 		const wb = XLSX.utils.book_new();
 
@@ -258,11 +324,15 @@ const getOutput3 = async (req, res) => {
 const getOutput4 = async (req, res) => {
 	try {
 		const invigilatorId = req.params.invigilatorId;
+		const schedId = req.params.schedId;
 		const duty_details = await statics.invigilators.findOne({
 			where: { psrn_no: invigilatorId },
 			include: [
 				{
 					model: sched.invigilatorsAlloted,
+					where: {
+						schedule_id: schedId
+					},
 					attributes: {
 						exclude: ['createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id']
 					},
