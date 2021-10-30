@@ -249,12 +249,14 @@ const update = async (req, res) => {
 			const exam_id = exam.id;
 			const slot = exam.time;
 			const schedule_id = id;
-			const isinvalidslot = await slotchecker(schedule_id, slot);
-			console.log(isinvalidslot);
-			if (isinvalidslot) {
-				return res.status(400).json({
-					msg: 'Invalid slot. Not present in the schedule :('
-				});
+			if (slot) {
+				const isinvalidslot = await slotchecker(schedule_id, slot);
+				console.log(isinvalidslot);
+				if (isinvalidslot) {
+					return res.status(400).json({
+						msg: 'Invalid slot. Not present in the schedule :('
+					});
+				}
 			}
 			await sched.exam.update(exam, {
 				where: {
