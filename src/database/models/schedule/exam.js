@@ -15,7 +15,8 @@ module.exports = sequelize.define(
 			type: DataTypes.DATE
 		},
 		time: {
-			type: DataTypes.ENUM('9-12', '2-5') // Add enumerations for compre times here
+			// slot
+			type: DataTypes.TEXT // Add enumerations for compre times here
 		},
 		schedule_id: {
 			type: DataTypes.BIGINT,

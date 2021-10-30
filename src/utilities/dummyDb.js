@@ -5,18 +5,11 @@ const statics = db.public.statics;
 
 async function public_force() {
 	// Populate users
-	await sched.user.create(
-		{
-			name: 'S1',
-			email: 'S1@gmail.com',
-			password: 'S1'
-		},
-		{
-			name: 'S2',
-			email: 'S2@gmail.com',
-			password: 'S2'
-		}
-	);
+	await sched.user.create({
+		name: 'S1',
+		email: 'S1@gmail.com',
+		password: 'S1'
+	});
 
 	// Populate schedules
 	const schedSaved = await sched.schedules.create({
@@ -24,6 +17,7 @@ async function public_force() {
 		user_id: '1',
 		start_date: '2021-07-14T13:42:41.642Z',
 		end_date: '2021-07-24T13:42:41.642Z',
+		slots: ['9-10:30', '11-12:30'],
 		slots_each_day: 2
 	});
 

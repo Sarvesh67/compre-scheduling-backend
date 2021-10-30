@@ -1,5 +1,6 @@
 // const express = require('express');
 const db = require('../database/db');
+const { Op } = require('sequelize');
 
 const sched = db.public.schedules;
 const statics = db.public.statics;
@@ -54,7 +55,7 @@ const upsertExamRoom = async (values, room_id) => {
 			})
 			.then(async (obj) => {
 				// update
-				if (obj){
+				if (obj) {
 					console.log(obj);
 					return await sched.examRoom.update(values, {
 						where: {
@@ -69,7 +70,7 @@ const upsertExamRoom = async (values, room_id) => {
 	} else {
 		return await sched.examRoom.create(values);
 	}
-}
+};
 
 const upsertInvigilator = async (values, invig_id) => {
 	if (invig_id) {
@@ -81,7 +82,7 @@ const upsertInvigilator = async (values, invig_id) => {
 			})
 			.then(async (obj) => {
 				// update
-				if (obj){
+				if (obj) {
 					console.log(obj);
 					return await sched.invigilatorsAlloted.update(values, {
 						where: {
@@ -96,7 +97,7 @@ const upsertInvigilator = async (values, invig_id) => {
 	} else {
 		return await sched.invigilatorsAlloted.create(values);
 	}
-}
+};
 
 const create = async (req, res) => {
 	try {
@@ -129,7 +130,7 @@ const create = async (req, res) => {
 			const examsaved = await sched.exam.bulkCreate(exams);
 			return res.status(200).json({
 				msg: 'Schedule successfully created!',
-				user: schedSaved,
+				schedule: schedSaved,
 				exam: examsaved
 			});
 		}
@@ -164,32 +165,32 @@ const get = async (req, res) => {
 			where: {
 				schedule_id: schedule.id
 			},
-			attributes:{
-				exclude:['course_id','createdAt','updatedAt']
+			attributes: {
+				exclude: ['course_id', 'createdAt', 'updatedAt']
 			},
 			include: [
 				{
 					model: sched.examRoom,
-					attributes:{
-						exclude:['room_id','exam_id','schedule_id','createdAt','updatedAt']
+					attributes: {
+						exclude: ['room_id', 'exam_id', 'schedule_id', 'createdAt', 'updatedAt']
 					},
 					include: [
 						{
-							model:statics.rooms,
-							attributes:{
-								exclude:['createdAt','updatedAt']
+							model: statics.rooms,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt']
 							}
 						},
 						{
 							model: sched.invigilatorsAlloted,
-							attributes:{
-								exclude:['schedule_id','createdAt','updatedAt','exam_room_id','invigilators_id']
+							attributes: {
+								exclude: ['schedule_id', 'createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id']
 							},
 							include: [
 								{
-									model:statics.invigilators,
-									attributes:{
-										exclude:['createdAt','updatedAt','mobile']
+									model: statics.invigilators,
+									attributes: {
+										exclude: ['createdAt', 'updatedAt', 'mobile']
 									}
 								}
 							]
@@ -198,14 +199,14 @@ const get = async (req, res) => {
 				},
 				{
 					model: statics.courses,
-					attributes:{
-						exclude:['createdAt','updatedAt','block_id']
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'block_id']
 					},
 					include: [
 						{
-							model:statics.invigilators,
-							attributes:{
-								exclude:['createdAt','updatedAt','mobile']
+							model: statics.invigilators,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt', 'mobile']
 							}
 						}
 					]
@@ -243,9 +244,18 @@ const update = async (req, res) => {
 				schedule: updatedSchedule
 			});
 		}
-		exams.forEach(async (exam) => {
+		for (const exam of exams) {
 			//update the exam block
 			const exam_id = exam.id;
+			const slot = exam.time;
+			const schedule_id = id;
+			const isinvalidslot = await slotchecker(schedule_id, slot);
+			console.log(isinvalidslot);
+			if (isinvalidslot) {
+				return res.status(400).json({
+					msg: 'Invalid slot. Not present in the schedule :('
+				});
+			}
 			await sched.exam.update(exam, {
 				where: {
 					id: exam_id
@@ -286,7 +296,7 @@ const update = async (req, res) => {
 					await upsertInvigilator(invig, invig_id);
 				});
 			});
-		});
+		}
 
 		return res.status(200).json({
 			msg: 'Schedule Details Successfully updated!',
@@ -325,3 +335,17 @@ module.exports = {
 	update: update,
 	get: get
 };
+
+// Function to check for invlid slots (True for invalid slot)
+async function slotchecker(schedule_id, slot) {
+	const schedule = await db.public.schedules.schedules.findOne({
+		where: {
+			[Op.and]: [{ id: schedule_id }, { slots: { [Op.contains]: [slot] } }]
+		}
+	});
+	if (!schedule) {
+		return true;
+	} else {
+		return false;
+	}
+}

@@ -22,6 +22,10 @@ module.exports = sequelize.define(
 		},
 		slots_each_day: {
 			type: DataTypes.INTEGER
+		},
+		slots: {
+			type: DataTypes.ARRAY(DataTypes.TEXT),
+			defaultValue: ['9-12, 3-5']
 		}
 	},
 	{
