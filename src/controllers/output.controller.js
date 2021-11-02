@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 const e = require('express');
 const XLSX = require('xlsx');
 const fs = require('fs');
@@ -8,7 +7,6 @@ const { Op } = require('sequelize');
 const { forEach } = require('underscore');
 
 const sequelize = db.conn;
-
 
 const sched = db.public.schedules;
 const statics = db.public.statics;
@@ -135,12 +133,7 @@ const getOutput2 = async (req, res) => {
 			});
 			const date = new Date(exam.date);
 			const dateString = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
-			var time;
-			if (exam.time == '2-5') {
-				time = '2:00pm-5:00pm';
-			} else {
-				time = '9:00am-12noon';
-			}
+			var time = exam.time;
 			await invigilators.forEach(async (invigilator) => {
 				const newRow = {
 					Date: dateString,
