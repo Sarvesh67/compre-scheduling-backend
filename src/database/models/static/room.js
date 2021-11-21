@@ -15,7 +15,7 @@ module.exports = sequelize.define(
 			type: DataTypes.TEXT
 		},
 		capacity: {
-			type: DataTypes.INTEGER
+			type: DataTypes.TEXT
 		}
 	},
 	{
