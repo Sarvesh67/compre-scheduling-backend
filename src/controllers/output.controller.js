@@ -535,6 +535,11 @@ const getOutput5 = async (req, res) => {
 			jsondata.push(newRow);
 		}
 
+		console.log(error);
+		return res.status(500).json({
+			msg: jsondata
+		});
+
 		const wb = XLSX.utils.book_new();
 
 		const ws = XLSX.utils.json_to_sheet(jsondata);
