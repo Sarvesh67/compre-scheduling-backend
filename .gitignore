@@ -106,3 +106,5 @@ dist
 #Sensitive Data
 compre-data/
 compre-data-prev/
+
+*.xlsx

@@ -8,6 +8,7 @@ const invigilatorRoutes = require('./invigilator.route');
 const courseRoutes = require('./course.route');
 const scheduleRoutes = require('./schedule.route');
 const outputRoutes = require('./output.route');
+const unavailableDates = require('./unavailableDates.route')
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/invigilator', invigilatorRoutes);
 router.use('/course', courseRoutes);
 router.use('/schedule', scheduleRoutes);
 router.use('/output', outputRoutes);
+router.use('/unavailableDates', unavailableDates)
 
 module.exports = router;
