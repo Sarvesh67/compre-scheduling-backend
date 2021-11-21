@@ -115,49 +115,84 @@ const getOutput2 = async (req, res) => {
 					[Op.not]: null
 				},
 				schedule_id: scheduleId
-			}
+			},
+			include: [{
+				model: sched.examRoom,
+					attributes: {
+						exclude: ['id','createdAt', 'updatedAt', 'room_id', 'exam_id','schedule_id']
+					},
+					include: [{
+						model:sched.invigilatorsAlloted,
+						attributes: {
+							exclude: ['createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id','schedule_id']
+						},
+						include:{
+							model: statics.invigilators,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt', 'id','duties_to_be_alloted','assignedDuties']
+							}
+						}
+					},
+					{
+						model:statics.rooms,
+						attributes:['name', 'capacity']
+					}]
+			},
+			{
+				model: statics.courses,
+				attributes: ['bits_id', 'discipline', 'title']
+			}]
 		});
 		for (const exam of exams) {
-			const course = await statics.courses.findOne({
-				where: {
-					id: exam.course_id
-				},
-				include: [statics.invigilators]
-			});
-			const invigilators = course.invigilators;
-			var ic;
-			await invigilators.forEach(async (invigilator) => {
-				if (invigilator.courses_invigilators.status == 'ic') {
-					ic = invigilator.name;
-				}
-			});
-			const date = new Date(exam.date);
+			date = new Date(exam.date)
 			const dateString = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
-			var time = exam.time;
-			await invigilators.forEach(async (invigilator) => {
-				const newRow = {
-					Date: dateString,
-					Time: time,
-					Course: course.bits_id,
-					'Course Title': course.title,
-					Disc: course.discipline,
-					Name: invigilator.name,
-					'Email Address': invigilator.email,
-					'PSRN/System ID': invigilator.psrn_no,
-					IC: ic
-				};
-				jsondata.push(newRow);
-			});
+			time = exam.time
+			course = await statics.courses.findAll({
+				where: {
+					bits_id: exam.course.bits_id
+				},
+				include: [{
+					model: statics.invigilators,
+					through:{
+						where: {
+							status: 'ic'
+						}
+					},
+					attributes: ['name']
+				}]
+			})
+			// console.log(course[0].invigilators[0].name)
+			for(const room of exam.exam_rooms){
+				for(const invigilator of room.invigilatorsAlloteds){
+					const newRow = {
+						Date: dateString,
+						Time: time,
+						Course: exam.course.bits_id,
+						'Course Title': exam.course.title,
+						Disc: exam.course.discipline,
+						Name: invigilator.invigilator.name,
+						'Email Address': invigilator.invigilator.email,
+						'PSRN/System ID': invigilator.invigilator.psrn_no,
+						Room: room.room.name,
+						IC: course[0].invigilators[0].name
+					};
+					jsondata.push(newRow);
+				}
+			}
 		}
-		//output2.generateOutput2(req.params.schedId);
-		const ws = XLSX.utils.json_to_sheet(jsondata);
+
 		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, 'Schedule');
-		XLSX.writeFile(wb, 'output2.xlsx');
-		var file = fs.readFileSync('output2.xlsx');
+
+		const ws = XLSX.utils.json_to_sheet(jsondata);
+
+		XLSX.utils.book_append_sheet(wb, ws, 'Output6');
+
 		res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output2.xlsx');
-		res.end(file);
+		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output6.xlsx');
+
+		const out = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+		console.log('finished');
+		res.end(Buffer.from(s2ab(out)));
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({
