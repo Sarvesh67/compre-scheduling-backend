@@ -2,7 +2,10 @@
 const e = require('express');
 const db = require('../database/db');
 
+const sequelize = db.conn;
+
 const statics = db.public.statics;
+const sched = db.public.schedules
 
 /**
  *
@@ -56,7 +59,28 @@ const get = async (req, res) => {
  */
 const getAll = async (req, res) => {
 	try {
+		const schedId = req.params.schedId
 		const invigilators = await statics.invigilators.findAll({});
+		const allotedDutiesCount = await sched.invigilatorsAlloted.findAll({
+			where: {
+				'schedule_id' : schedId
+			},
+			attributes: [[sequelize.fn('COUNT', 'invigilators_id'), 'assignedDuties'], 'invigilators_id'],
+			group: ['invigilators_id']
+		})
+		//console.log(allotedDutiesCount)
+		const dict = {}
+		for(const invig of allotedDutiesCount){
+			dict[invig.invigilators_id] = invig.getDataValue('assignedDuties')
+			//console.log(invig)
+		}
+		//console.log(dict)
+		for(const inv of invigilators){
+			if(inv.id in dict){
+				//console.log(inv.id)
+				inv.assignedDuties = dict[inv.id]
+			}
+		}
 		return res.status(200).json({
 			msg: 'Invigilator successfully retrieved',
 			invigilator: invigilators
