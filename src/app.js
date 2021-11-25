@@ -17,10 +17,10 @@ async function Server() {
 	app.use(helmet());
 
 	// Parse json request body
-	app.use(express.json({ limit: "5mb" }));
+	app.use(express.json({ limit: '5mb' }));
 
 	// Parse urlencoded request body
-	app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+	app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 	// Sanitize request data
 	app.use(xss());

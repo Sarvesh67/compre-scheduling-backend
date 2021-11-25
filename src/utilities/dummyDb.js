@@ -63,6 +63,16 @@ async function public_force() {
 			returning: true
 		}
 	);
+	await sched.exam.update(
+		{
+			time: '2-5',
+			date: '2021-07-14T13:42:41.642Z'
+		},
+		{
+			where: { id: 9 },
+			returning: true
+		}
+	);
 
 	// Populate exam rooms
 	await sched.examRoom.create({
@@ -86,6 +96,12 @@ async function public_force() {
 	await sched.examRoom.create({
 		exam_id: 3,
 		room_id: 3,
+		schedule_id: schedSaved.id,
+		capacity: 20
+	});
+	await sched.examRoom.create({
+		exam_id: 9,
+		room_id: 4,
 		schedule_id: schedSaved.id,
 		capacity: 20
 	});
@@ -121,13 +137,18 @@ async function public_force() {
 		invigilators_id: 2,
 		schedule_id: schedSaved.id
 	});
+	await sched.invigilatorsAlloted.create({
+		exam_room_id: 5,
+		invigilators_id: 3,
+		schedule_id: schedSaved.id
+	});
 
 	return;
 }
 
 if (require.main == module) {
 	public_force()
-		.then(() => console.log('Dummy data populatd successfully!'))
+		.then(() => console.log('Dummy data populated successfully!'))
 		.catch((e) => {
 			throw e;
 		});

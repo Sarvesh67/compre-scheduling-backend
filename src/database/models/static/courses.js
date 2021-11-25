@@ -31,6 +31,9 @@ module.exports = sequelize.define(
 		},
 		block: {
 			type: DataTypes.TEXT
+		},
+		code: {
+			type: DataTypes.ARRAY(DataTypes.TEXT)
 		}
 	},
 	{

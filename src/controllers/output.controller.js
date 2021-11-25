@@ -1,10 +1,10 @@
-const e = require('express');
+// const e = require('express');
 const XLSX = require('xlsx');
 const fs = require('fs');
 
 const db = require('../database/db');
 const { Op } = require('sequelize');
-const { forEach } = require('underscore');
+const path = require('path');
 
 const sequelize = db.conn;
 
@@ -116,54 +116,60 @@ const getOutput2 = async (req, res) => {
 				},
 				schedule_id: scheduleId
 			},
-			include: [{
-				model: sched.examRoom,
+			include: [
+				{
+					model: sched.examRoom,
 					attributes: {
-						exclude: ['id','createdAt', 'updatedAt', 'room_id', 'exam_id','schedule_id']
+						exclude: ['id', 'createdAt', 'updatedAt', 'room_id', 'exam_id', 'schedule_id']
 					},
-					include: [{
-						model:sched.invigilatorsAlloted,
-						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id','schedule_id']
-						},
-						include:{
-							model: statics.invigilators,
+					include: [
+						{
+							model: sched.invigilatorsAlloted,
 							attributes: {
-								exclude: ['createdAt', 'updatedAt', 'id','duties_to_be_alloted','assignedDuties']
+								exclude: ['createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id', 'schedule_id']
+							},
+							include: {
+								model: statics.invigilators,
+								attributes: {
+									exclude: ['createdAt', 'updatedAt', 'id', 'duties_to_be_alloted', 'assignedDuties']
+								}
 							}
+						},
+						{
+							model: statics.rooms,
+							attributes: ['name', 'capacity']
 						}
-					},
-					{
-						model:statics.rooms,
-						attributes:['name', 'capacity']
-					}]
-			},
-			{
-				model: statics.courses,
-				attributes: ['bits_id', 'discipline', 'title']
-			}]
+					]
+				},
+				{
+					model: statics.courses,
+					attributes: ['bits_id', 'discipline', 'title']
+				}
+			]
 		});
 		for (const exam of exams) {
-			date = new Date(exam.date)
+			const date = new Date(exam.date);
 			const dateString = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
-			time = exam.time
-			course = await statics.courses.findAll({
+			const time = exam.time;
+			const course = await statics.courses.findAll({
 				where: {
 					bits_id: exam.course.bits_id
 				},
-				include: [{
-					model: statics.invigilators,
-					through:{
-						where: {
-							status: 'ic'
-						}
-					},
-					attributes: ['name']
-				}]
-			})
+				include: [
+					{
+						model: statics.invigilators,
+						through: {
+							where: {
+								status: 'ic'
+							}
+						},
+						attributes: ['name']
+					}
+				]
+			});
 			// console.log(course[0].invigilators[0].name)
-			for(const room of exam.exam_rooms){
-				for(const invigilator of room.invigilatorsAlloteds){
+			for (const room of exam.exam_rooms) {
+				for (const invigilator of room.invigilatorsAlloteds) {
 					const newRow = {
 						Date: dateString,
 						Time: time,
@@ -192,6 +198,7 @@ const getOutput2 = async (req, res) => {
 
 		const out = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
 		console.log('finished');
+		// eslint-disable-next-line no-undef
 		res.end(Buffer.from(s2ab(out)));
 	} catch (error) {
 		console.log(error);
@@ -214,39 +221,52 @@ const getOutput3 = async (req, res) => {
 		const courses = await statics.courses.findOne({
 			where: { id: id },
 			include: [
-			{
-				model: sched.exam,
-				where: {
-					schedule_id: schedId
-				},
-				attributes: {
-					exclude: ['id','createdAt', 'updatedAt', 'course_id','schedule_id']
-				},
-				include: {
-					model: sched.examRoom,
+				{
+					model: sched.exam,
+					where: {
+						schedule_id: schedId
+					},
 					attributes: {
-						exclude: ['id','createdAt', 'updatedAt', 'room_id', 'exam_id','schedule_id']
+						exclude: ['id', 'createdAt', 'updatedAt', 'course_id', 'schedule_id']
 					},
-					include: [{
-						model:sched.invigilatorsAlloted,
+					include: {
+						model: sched.examRoom,
 						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'exam_room_id', 'invigilators_id','schedule_id']
+							exclude: ['id', 'createdAt', 'updatedAt', 'room_id', 'exam_id', 'schedule_id']
 						},
-						include:{
-							model: statics.invigilators,
-							attributes: {
-								exclude: ['createdAt', 'updatedAt', 'id','duties_to_be_alloted','assignedDuties']
+						include: [
+							{
+								model: sched.invigilatorsAlloted,
+								attributes: {
+									exclude: [
+										'createdAt',
+										'updatedAt',
+										'exam_room_id',
+										'invigilators_id',
+										'schedule_id'
+									]
+								},
+								include: {
+									model: statics.invigilators,
+									attributes: {
+										exclude: [
+											'createdAt',
+											'updatedAt',
+											'id',
+											'duties_to_be_alloted',
+											'assignedDuties'
+										]
+									}
+								}
+							},
+							{
+								model: statics.rooms,
+								attributes: ['name', 'capacity']
 							}
-						}
-					},
-					{
-						model:statics.rooms,
-						attributes:['name', 'capacity']
+						]
 					}
-				]
 				}
-			}
-		]
+			]
 		});
 
 		if (!courses) {
@@ -260,17 +280,17 @@ const getOutput3 = async (req, res) => {
 		// 	courses
 		// })
 		//Delete when working
-		
+
 		var examDate = '';
 		var examTime = '';
 		const invigilators = [];
 		//console.log(courses.exams.exam_rooms)
 
-		for (const exams of courses.exams){
-			examDate = new Date(exams.date)
+		for (const exams of courses.exams) {
+			examDate = new Date(exams.date);
 			examTime = exams.time;
-			for(const room of exams.exam_rooms){
-				for(const invigilator of room.invigilatorsAlloteds){
+			for (const room of exams.exam_rooms) {
+				for (const invigilator of room.invigilatorsAlloteds) {
 					const invigilator_data = {
 						id: invigilator.id,
 						room: room.room.name,
@@ -287,14 +307,20 @@ const getOutput3 = async (req, res) => {
 			}
 		}
 
-		
 		const course_data = [
 			['bits_id', courses.bits_id],
 			['title', courses.title],
 			['capacity', courses.capacity],
 			['invigilators_required', courses.invigilators_required],
 			['discipline', courses.discipline],
-			['date', examDate.getDate().toString() +'/' + examDate.getMonth().toString() + '/' + examDate.getFullYear().toString()],
+			[
+				'date',
+				examDate.getDate().toString() +
+					'/' +
+					examDate.getMonth().toString() +
+					'/' +
+					examDate.getFullYear().toString()
+			],
 			['Time', examTime],
 			['', '']
 		];
@@ -491,7 +517,7 @@ const getOutput4 = async (req, res) => {
 
 const getOutput5 = async (req, res) => {
 	try {
-		var jsondata = []
+		var jsondata = [];
 		const scheduleId = req.params.schedId;
 		const schedule = await sched.exam.findAll({
 			where: {
@@ -512,7 +538,7 @@ const getOutput5 = async (req, res) => {
 					attributes: {
 						exclude: ['createdAt', 'updatedAt', 'room_id', 'exam_id']
 					},
-					include : [
+					include: [
 						{
 							model: sched.invigilatorsAlloted,
 							attributes: {
@@ -522,39 +548,36 @@ const getOutput5 = async (req, res) => {
 					]
 				}
 			]
-		})
+		});
 
-		dateDict = {}
+		const dateDict = {};
 
 		schedule.forEach((exam) => {
 			const date = new Date(exam.date);
 			const dateString = date.getDate() + '-' + date.getMonth() + '-' + date.getFullYear();
-			
-			for(const room of exam.exam_rooms){
-				
-				for(const invi of room.invigilatorsAlloteds){
+
+			for (const room of exam.exam_rooms) {
+				for (const invi of room.invigilatorsAlloteds) {
 					const id = invi.invigilators_id;
-					if(id in dateDict){
-						if(dateString in dateDict[id]){
+					if (id in dateDict) {
+						if (dateString in dateDict[id]) {
 							dateDict[id][dateString]++;
-						}
-						else{
+						} else {
 							dateDict[id][dateString] = 1;
 						}
-					}
-					else{
+					} else {
 						dateDict[id] = {};
 						dateDict[id][dateString] = 1;
 					}
 				}
 			}
-		})
+		});
 
-		for(const key in dateDict){
-			var value = "";
-			for(const date in dateDict[key]){
-				if(dateDict[key][date] > 1){
-					value += date + ", "
+		for (const key in dateDict) {
+			var value = '';
+			for (const date in dateDict[key]) {
+				if (dateDict[key][date] > 1) {
+					value += date + ', ';
 				}
 			}
 
@@ -564,16 +587,11 @@ const getOutput5 = async (req, res) => {
 
 			const newRow = {
 				name: invigilatorData.name,
-				'PSRN/System ID' : invigilatorData.psrn_no,
-				'Dates Alloted' : value
-			}
+				'PSRN/System ID': invigilatorData.psrn_no,
+				'Dates Alloted': value
+			};
 			jsondata.push(newRow);
 		}
-
-		console.log(error);
-		return res.status(500).json({
-			msg: jsondata
-		});
 
 		const wb = XLSX.utils.book_new();
 
@@ -599,25 +617,25 @@ const getOutput5 = async (req, res) => {
 
 const getOutput6 = async (req, res) => {
 	try {
-		var jsondata = []
+		var jsondata = [];
 		const scheduleId = req.params.schedId;
 		const invigilatorsList = await sched.invigilatorsAlloted.findAll({
 			where: {
 				schedule_id: scheduleId
 			},
-			attributes: ['invigilators_id', [sequelize.fn('count', sequelize.col('invigilators_id')), 'count']], 
-			group: ["invigilators_id"]
-		})
+			attributes: ['invigilators_id', [sequelize.fn('count', sequelize.col('invigilators_id')), 'count']],
+			group: ['invigilators_id']
+		});
 
-		for(const invigilator of invigilatorsList){
-			data = await statics.invigilators.findByPk(invigilator.invigilators_id);
-			console.log(invigilator.dataValues.count)
+		for (const invigilator of invigilatorsList) {
+			const data = await statics.invigilators.findByPk(invigilator.invigilators_id);
+			console.log(invigilator.dataValues.count);
 			const newRow = {
-				'name' : data.name,
-				'PSRN/SYSTEM ID' : data.psrn_no,
-				'No. Of Duties In Total' : invigilator.dataValues.count,
-				'STAT' : data.stat1
-			}
+				name: data.name,
+				'PSRN/SYSTEM ID': data.psrn_no,
+				'No. Of Duties In Total': invigilator.dataValues.count,
+				STAT: data.stat1
+			};
 			jsondata.push(newRow);
 		}
 
@@ -641,7 +659,121 @@ const getOutput6 = async (req, res) => {
 			msg: 'Internal server error :('
 		});
 	}
-}
+};
+
+const getOutput7 = async (req, res) => {
+	try {
+		const schedule_id = req.params.schedId;
+		const schedule = await sched.schedules.findAll({
+			where: {
+				id: schedule_id
+			},
+			attributes: {
+				exclude: ['createdAt', 'updatedAt', 'course_id']
+			},
+			include: [
+				{
+					model: sched.examRoom,
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'room_id', 'exam_id']
+					},
+					include: [
+						{
+							model: statics.rooms,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt']
+							}
+						},
+						{
+							model: sched.exam,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt']
+							},
+							include: [
+								{
+									model: statics.courses,
+									attributes: {
+										exclude: ['createdAt', 'updatedAt']
+									}
+								}
+							]
+						},
+						{
+							model: sched.invigilatorsAlloted,
+							attributes: {
+								exclude: ['createdAt', 'updatedAt']
+							},
+							include: [
+								{
+									model: statics.invigilators,
+									attributes: {
+										exclude: ['createdAt', 'updatedAt']
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		});
+		// eslint-disable-next-line no-undef
+		let regData = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../compre-data/regdata.json'), 'utf-8'));
+		const exam_rooms = schedule[0].exam_rooms;
+
+		for (let i = 0; i < exam_rooms.length; i++) {
+			const room_id = exam_rooms[i].room.id;
+			const room_name = exam_rooms[i].room.name;
+			console.log(room_name);
+			if (room_id === 1) {
+				continue;
+			}
+			const courseIds = exam_rooms[i].exam.course.code;
+			const capacity = exam_rooms[i].room.capacity;
+			let c = 0;
+
+			exit_loop: for (let k = 0; k < courseIds.length; k++) {
+				console.log(courseIds[k]);
+				// Find CourseID in reg data.
+				for (let j = 0; j < regData.length; j++) {
+					if (courseIds[k] == regData[j].CourseID) {
+						console.log('loop3-if');
+						regData[j]['room'] = room_name;
+						c = c + 1;
+					}
+					if (c >= capacity) {
+						console.log(c + '  ' + capacity);
+						console.log('break loop');
+						break exit_loop;
+					}
+				}
+			}
+		}
+		// fs.writeFileSync('regdata2.json', JSON.stringify(regData, null, 2));
+		/* return res.status(200).json({
+			schedule: schedule
+		}); */
+		const wb = XLSX.utils.book_new();
+
+		const ws = XLSX.utils.json_to_sheet(regData);
+
+		//XLSX.utils.sheet_add_json(ws, duties, { origin: -1 });
+		XLSX.utils.book_append_sheet(wb, ws, 'Output7');
+
+		res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		res.setHeader('Content-Disposition', 'attachment; filename=' + 'output7.xlsx');
+
+		const out = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+		console.log('finished');
+		// eslint-disable-next-line no-undef
+		res.end(Buffer.from(s2ab(out)));
+		return;
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({
+			msg: 'Internal server error :('
+		});
+	}
+};
 
 module.exports = {
 	getOutput1: getOutput1,
@@ -649,7 +781,8 @@ module.exports = {
 	getOutput3: getOutput3,
 	getOutput4: getOutput4,
 	getOutput5: getOutput5,
-	getOutput6: getOutput6
+	getOutput6: getOutput6,
+	getOutput7: getOutput7
 };
 
 //s2ab method

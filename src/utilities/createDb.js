@@ -38,11 +38,10 @@ async function main(testing) {
 	await db.conn.sync({ force: testing });
 
 	if (testing) {
-		try{
+		try {
 			await public_force();
-		}
-		catch(e){
-			console.log(e)
+		} catch (e) {
+			console.log(e);
 		}
 	} else {
 		console.log('\n\n\n\n\n');
