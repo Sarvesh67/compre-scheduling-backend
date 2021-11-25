@@ -68,17 +68,29 @@ const getAll = async (req, res) => {
 			attributes: [[sequelize.fn('COUNT', 'invigilators_id'), 'assignedDuties'], 'invigilators_id'],
 			group: ['invigilators_id']
 		})
-		//console.log(allotedDutiesCount)
+		const unavailableDates = await statics.unavailableDates.findAll({})
+
+		//console.log(unavailableDates)
 		const dict = {}
 		for(const invig of allotedDutiesCount){
 			dict[invig.invigilators_id] = invig.getDataValue('assignedDuties')
 			//console.log(invig)
 		}
-		//console.log(dict)
+		const psrnDict = {}
+		for(const inv of unavailableDates){
+			if(!(inv.invigilator_id in psrnDict)){
+				psrnDict[inv.invigilator_id] = []
+			}
+			psrnDict[inv.invigilator_id].push(inv.getDataValue('unavailable_date'))
+		}
+		//console.log(psrnDict)
 		for(const inv of invigilators){
 			if(inv.id in dict){
-				//console.log(inv.id)
 				inv.assignedDuties = dict[inv.id]
+			}
+			if(inv.psrn_no in psrnDict){
+				inv.setDataValue('unavailableDates', psrnDict[inv.psrn_no])
+				//console.log(inv)
 			}
 		}
 		return res.status(200).json({
